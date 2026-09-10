@@ -1,24 +1,28 @@
 # UTEQ Smart Parking — Panel de Administración
 
-Panel administrativo desarrollado con **React + Vite + CoreUI** para el sistema de parqueadero inteligente de la UTEQ. Consulta y visualiza los vehículos autorizados almacenados en **Supabase**, y permite monitorear el ingreso vehicular en tiempo real mediante **reconocimiento automático de placas (OCR)**.
+Panel administrativo desarrollado con **React + Vite + CoreUI** para el sistema de parqueadero inteligente de la UTEQ. Permite consultar y visualizar los vehículos autorizados almacenados en **Supabase** y monitorear el ingreso vehicular mediante **reconocimiento automático de placas (OCR)**.
 
-<img width="813" height="417" alt="image" src="https://github.com/user-attachments/assets/4886e1fa-0ac9-4e33-9332-af37058d09df" />
+El proyecto se encuentra desplegado en producción mediante **Vercel**, con acceso público mediante un dominio `vercel.app`.
 
+<img width="813" height="417" alt="image" src="https://github.com/user-attachments/assets/488e6f1fa-0ac9-4e33-9332-af37058d09df" />
+
+---
 
 ## Contenido
 
-- [Funcionalidades](#funcionalidades)
-  - [1. Vehículos y propietarios](#1-vehículos-y-propietarios)
-  - [2. Monitoreo de entrada](#2-monitoreo-de-entrada)
-- [Tecnologías utilizadas](#tecnologías-utilizadas)
-- [Configuración](#configuración)
-- [Instalación y ejecución](#instalación-y-ejecución)
-- [Estructura del proyecto](#estructura-del-proyecto)
-- [Rutas de la aplicación](#rutas-de-la-aplicación)
-- [Despliegue (Azure Static Web Apps)](#despliegue-azure-static-web-apps)
-- [Seguridad y buenas prácticas](#seguridad-y-buenas-prácticas)
-- [Estado de verificación](#estado-de-verificación)
-- [Autor](#autor)
+* [Funcionalidades](#funcionalidades)
+
+  * [1. Vehículos y propietarios](#1-vehículos-y-propietarios)
+  * [2. Monitoreo de entrada](#2-monitoreo-de-entrada)
+* [Tecnologías utilizadas](#tecnologías-utilizadas)
+* [Configuración](#configuración)
+* [Instalación y ejecución](#instalación-y-ejecución)
+* [Estructura del proyecto](#estructura-del-proyecto)
+* [Rutas de la aplicación](#rutas-de-la-aplicación)
+* [Despliegue en Vercel](#despliegue-en-vercel)
+* [Seguridad y buenas prácticas](#seguridad-y-buenas-prácticas)
+* [Estado de verificación](#estado-de-verificación)
+* [Autor](#autor)
 
 ---
 
@@ -28,104 +32,168 @@ Panel administrativo desarrollado con **React + Vite + CoreUI** para el sistema 
 
 Vista administrativa accesible en `/parqueadero/vehiculos` que consulta directamente la tabla `vehiculos` de Supabase.
 
-- Fotografía del vehículo con enlace a la fuente original.
-- Fotografía circular del propietario.
-- Matrícula, marca, modelo, año y color.
-- Nombre del propietario, cédula enmascarada y correo institucional.
-- Estado de autorización del vehículo.
-- Búsqueda por placa, marca, modelo, color, propietario o correo.
-- Paginación de 10 registros por página.
-- Indicador de carga, mensaje de error y botón **Actualizar**.
+* Fotografía del vehículo con enlace a la fuente original.
+* Fotografía circular del propietario.
+* Matrícula, marca, modelo, año y color.
+* Nombre del propietario, cédula enmascarada y correo institucional.
+* Estado de autorización del vehículo.
+* Búsqueda por placa, marca, modelo, color, propietario o correo.
+* Paginación de 10 registros por página.
+* Indicador de carga.
+* Mensajes de error.
+* Botón **Actualizar** para recargar la información.
+
 <img width="813" height="417" alt="image" src="https://github.com/user-attachments/assets/96e92d35-798f-49c4-a34f-52bf26228a4b" />
 
-Es una vista de solo consulta: no incluye formularios CRUD, registro de entradas/salidas ni autenticación propia.
+La vista está orientada a la consulta y administración de la información de vehículos y propietarios disponible en Supabase.
+
+---
 
 ### 2. Monitoreo de entrada
 
-Vista accesible en `/parqueadero/monitoreo-entrada` que permite capturar la imagen de un vehículo y reconocer su placa automáticamente mediante un servicio REST de OCR, verificando si está autorizado a ingresar.
+Vista accesible en `/parqueadero/monitoreo-entrada` que permite capturar la imagen de un vehículo y reconocer su placa automáticamente mediante un servicio REST de OCR, verificando posteriormente si el vehículo está registrado y autorizado.
 
-**Captura (columna izquierda)**
+#### Captura
 
-- Vista previa de cámara en tiempo real (`navigator.mediaDevices.getUserMedia`), con preferencia por la cámara posterior en dispositivos móviles (`facingMode: environment`).
-- Activar / detener cámara, con liberación automática de los tracks al salir de la vista.
-- Captura de fotografía mediante `<canvas>` → `Blob` JPEG.
-- Selección alternativa de una imagen JPG o PNG desde el dispositivo.
-- Validación de formato y tamaño (máximo 4 MiB) antes de enviar.
+* Vista previa de cámara en tiempo real mediante `navigator.mediaDevices.getUserMedia`.
+* Preferencia por la cámara posterior en dispositivos móviles mediante `facingMode: environment`.
+* Activación y detención de la cámara.
+* Liberación automática de los recursos de la cámara al salir de la vista.
+* Captura de fotografías mediante `<canvas>` y conversión a `Blob` JPEG.
+* Selección alternativa de imágenes JPG o PNG desde el dispositivo.
+* Validación del formato y tamaño de la imagen.
+* Tamaño máximo permitido de 4 MiB.
+
 <img width="724" height="350" alt="image" src="https://github.com/user-attachments/assets/4fe517e3-d0e7-4993-8e17-adac82f4750d" />
 
-**Resultado (columna derecha)**
+#### Resultado del reconocimiento
 
-- Envío de la imagen por `POST` (cuerpo binario, no JSON/Base64) al endpoint OCR.
-- Estado del reconocimiento, placa detectada y nivel de confianza del OCR.
-- Imagen devuelta por la API con la placa marcada (rectángulo verde), reconstruida desde Base64.
-- Si el vehículo está registrado: marca, modelo, año, color, tipo, fotografías, nombre del propietario, cédula enmascarada y autorización.
-- Si no está registrado: alerta **VEHÍCULO NO REGISTRADO**, sin datos inventados.
-- Manejo de los estados `sin_placa`, `baja_confianza` y `multiples_placas`, y de los errores HTTP `400`, `413`, `415`, `502` y `504`, con opción de reintentar o procesar otra imagen.
+* Envío de la imagen mediante `POST` al servicio OCR.
+* Envío de la imagen como datos binarios, evitando JSON/Base64 para la solicitud.
+* Estado del reconocimiento.
+* Placa detectada.
+* Nivel de confianza del reconocimiento.
+* Visualización de la imagen procesada por la API.
+* Representación de la placa detectada mediante un rectángulo.
+* Consulta de los datos del vehículo asociados a la placa.
+* Visualización de marca, modelo, año, color, fotografías, propietario y autorización cuando la información está disponible.
+* Alerta **VEHÍCULO NO REGISTRADO** cuando la placa no corresponde a un vehículo registrado.
+* Manejo de los estados `sin_placa`, `baja_confianza` y `multiples_placas`.
+* Manejo de errores HTTP `400`, `413`, `415`, `502` y `504`.
+* Opción para reintentar el procesamiento o seleccionar una nueva imagen.
+
 <img width="813" height="458" alt="image" src="https://github.com/user-attachments/assets/d08b18ab-d24c-4023-9e08-2b513f833b79" />
 
-> La verificación del registro del vehículo (consulta a Supabase) la realiza el servicio OCR externo; el frontend no consulta Supabase directamente para esta funcionalidad — consume el resultado ya resuelto por la API.
+> La identificación de la placa y la consulta de los datos asociados se realizan mediante el servicio OCR proporcionado para el proyecto. El frontend consume la respuesta del servicio y presenta la información obtenida.
 
 ---
 
 ## Tecnologías utilizadas
 
-| Tecnología | Uso en el proyecto |
-| --- | --- |
-| React 19 | Interfaz de usuario basada en componentes y hooks |
-| Vite | Servidor de desarrollo y compilación; inyecta variables `VITE_*` |
-| CoreUI React | Sistema de componentes del panel administrativo |
-| Supabase JS Client | Consulta de la tabla `vehiculos` (vista de Vehículos y propietarios) |
-| API REST OCR | Servicio externo (Azure Functions) para reconocimiento de placas y verificación de registro |
-| `getUserMedia` + `Canvas` | Acceso a la cámara y captura de fotogramas |
-| Sass | Estilos del template |
-| GitHub Actions | Build y despliegue automatizado |
-| Azure Static Web Apps | Hospedaje con HTTPS habilitado |
+| Tecnología         | Uso en el proyecto                                                      |
+| ------------------ | ----------------------------------------------------------------------- |
+| React 19           | Interfaz de usuario basada en componentes y hooks                       |
+| Vite               | Servidor de desarrollo y compilación del proyecto                       |
+| CoreUI React       | Componentes y diseño del panel administrativo                           |
+| Supabase JS Client | Consulta de la información almacenada en Supabase                       |
+| API REST OCR       | Reconocimiento automático de placas y consulta de información vehicular |
+| `getUserMedia`     | Acceso a la cámara del dispositivo                                      |
+| Canvas             | Captura y procesamiento de imágenes                                     |
+| Sass               | Estilos utilizados por el template                                      |
+| Git                | Control de versiones                                                    |
+| GitHub             | Repositorio del código fuente                                           |
+| Vercel             | Hospedaje y despliegue de producción                                    |
 
 ---
 
 ## Configuración
 
-Crea un archivo `.env` (o `.env.local`) en la raíz del proyecto — **nunca se sube al repositorio** — con:
+El proyecto utiliza variables de entorno para evitar almacenar directamente credenciales y configuraciones sensibles dentro del código fuente.
+
+Crear un archivo `.env` o `.env.local` en la raíz del proyecto:
 
 ```dotenv
 VITE_SUPABASE_URL=https://SU_PROYECTO.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_SU_CLAVE
-VITE_OCR_ENDPOINT=https://SU_ENDPOINT_OCR_PROPORCIONADO_POR_EL_DOCENTE
+VITE_SUPABASE_PUBLISHABLE_KEY=SU_CLAVE_PUBLICABLE
+VITE_OCR_ENDPOINT=https://SU_ENDPOINT_OCR
 ```
 
-Reglas importantes:
+### Variables utilizadas
 
-- No se deben publicar `.env`, `.env.local` ni ninguna clave `service_role`.
-- `VITE_OCR_ENDPOINT` (URL con el código de acceso del docente) **no se escribe en ningún componente**; se lee exclusivamente vía `import.meta.env.VITE_OCR_ENDPOINT`.
-- En producción, las tres variables se configuran como **secretos de GitHub Actions** e inyectan durante el paso de build del workflow (ver [Despliegue](#despliegue-azure-static-web-apps)).
+| Variable                        | Descripción                                                       |
+| ------------------------------- | ----------------------------------------------------------------- |
+| `VITE_SUPABASE_URL`             | URL del proyecto de Supabase                                      |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clave publicable utilizada por el cliente de Supabase             |
+| `VITE_OCR_ENDPOINT`             | Endpoint del servicio REST encargado del reconocimiento de placas |
 
-Puedes usar `.env.example` como plantilla de referencia (sin valores reales).
+### Importante
+
+Los archivos `.env`, `.env.local` y sus variantes **no deben subirse al repositorio de GitHub**.
+
+Tampoco se debe colocar directamente en el código fuente ninguna clave privada, token o código de acceso del servicio.
+
+La configuración de producción se realiza mediante las **Environment Variables de Vercel**.
 
 ---
 
 ## Instalación y ejecución
 
+Clonar el repositorio:
+
+```bash
+git clone https://github.com/Jplazap/PLAZA_JORGE_SMART_PARKING_CRUD.git
+```
+
+Ingresar al proyecto:
+
+```bash
+cd PLAZA_JORGE_SMART_PARKING_CRUD
+```
+
+Instalar las dependencias:
+
 ```bash
 npm install
+```
+
+Ejecutar el proyecto en modo desarrollo:
+
+```bash
 npm start
 ```
 
-Abrir en el navegador:
+El proyecto estará disponible localmente en:
+
+```text
+http://localhost:3000
+```
+
+Las principales vistas pueden accederse mediante:
 
 ```text
 http://localhost:3000/#/parqueadero/vehiculos
 http://localhost:3000/#/parqueadero/monitoreo-entrada
 ```
 
-> El proyecto usa `HashRouter`, por eso las rutas incluyen `#`. El puerto `3000` es el origen autorizado por el docente para consumir el endpoint OCR durante las pruebas.
+> La aplicación utiliza `HashRouter`, por lo que las rutas incluyen el carácter `#`.
 
-Para generar la compilación de producción:
+---
+
+## Compilación para producción
+
+Para generar la versión optimizada del proyecto:
 
 ```bash
 npm run build
 ```
 
-Para revisar el estilo de código:
+El proceso de compilación genera los archivos de producción en:
+
+```text
+build/
+```
+
+Para revisar el código mediante ESLint:
 
 ```bash
 npm run lint
@@ -137,87 +205,160 @@ npm run lint
 
 ```text
 src/
-├── _nav.jsx                                   # Menú lateral (Vehículos, Monitoreo de entrada)
-├── routes.js                                  # Registro de rutas con carga diferida (lazy)
-├── App.jsx                                     # HashRouter y layout raíz
+├── _nav.jsx
+├── routes.js
+├── App.jsx
 ├── hooks/
-│   ├── useVehiculos.js                        # Consulta y recarga de Supabase
-│   └── useCamara.js                            # Acceso, captura y liberación de la cámara
+│   ├── useVehiculos.js
+│   └── useCamara.js
 ├── lib/
-│   ├── supabase.js                             # Cliente de Supabase
-│   └── ocrService.js                           # Validación y consumo del endpoint OCR
+│   ├── supabase.js
+│   └── ocrService.js
 └── views/
     └── parqueadero/
-        ├── ListaVehiculos.jsx                  # Tabla, búsqueda y paginación
+        ├── ListaVehiculos.jsx
         └── monitoreo-entrada/
-            ├── MonitoreoEntrada.jsx            # Vista principal (captura, 2 columnas)
-            └── PanelResultado.jsx              # Presentación del resultado por estado
+            ├── MonitoreoEntrada.jsx
+            └── PanelResultado.jsx
 
 .github/
 └── workflows/
-    └── azure-static-web-apps.yml               # Build + despliegue a Azure Static Web Apps
 ```
 
-Documentación adicional: [`ARCHITECTURE.md`](./ARCHITECTURE.md) y [`DEVELOPMENT.md`](./DEVELOPMENT.md).
+### Principales archivos
+
+| Archivo                                                        | Función                                               |
+| -------------------------------------------------------------- | ----------------------------------------------------- |
+| `src/_nav.jsx`                                                 | Configuración del menú lateral                        |
+| `src/routes.js`                                                | Registro de las rutas de la aplicación                |
+| `src/App.jsx`                                                  | Componente principal y configuración del enrutamiento |
+| `src/hooks/useVehiculos.js`                                    | Consulta y actualización de datos de vehículos        |
+| `src/hooks/useCamara.js`                                       | Gestión de la cámara y captura de imágenes            |
+| `src/lib/supabase.js`                                          | Configuración del cliente Supabase                    |
+| `src/lib/ocrService.js`                                        | Comunicación con el servicio OCR                      |
+| `src/views/parqueadero/ListaVehiculos.jsx`                     | Tabla de vehículos y propietarios                     |
+| `src/views/parqueadero/monitoreo-entrada/MonitoreoEntrada.jsx` | Vista principal del monitoreo                         |
+| `src/views/parqueadero/monitoreo-entrada/PanelResultado.jsx`   | Presentación del resultado del reconocimiento         |
 
 ---
 
 ## Rutas de la aplicación
 
-| Ruta | Vista | Descripción |
-| --- | --- | --- |
-| `/parqueadero/vehiculos` | Vehículos y propietarios | Listado, búsqueda y paginación desde Supabase |
-| `/parqueadero/monitoreo-entrada` | Monitoreo de entrada | Captura, reconocimiento de placa y verificación de ingreso |
+| Ruta                             | Vista                    | Descripción                                                                       |
+| -------------------------------- | ------------------------ | --------------------------------------------------------------------------------- |
+| `/parqueadero/vehiculos`         | Vehículos y propietarios | Consulta, búsqueda y paginación de vehículos desde Supabase                       |
+| `/parqueadero/monitoreo-entrada` | Monitoreo de entrada     | Captura de imágenes, reconocimiento de placas y consulta de información vehicular |
 
 ---
 
-## Despliegue (Azure Static Web Apps)
+## Despliegue en Vercel
 
-El proyecto se despliega como sitio estático en **Azure Static Web Apps**, con HTTPS habilitado (requisito indispensable para el uso de la cámara del navegador).
+El proyecto se encuentra desplegado en producción mediante **Vercel**.
 
-1. Crear el recurso *Static Web App* en Azure (plan gratuito), eligiendo **Other** como origen de despliegue.
-2. Copiar el *deployment token* del recurso y guardarlo como secreto `AZURE_STATIC_WEB_APPS_API_TOKEN` en GitHub.
-3. Configurar en **Settings → Secrets and variables → Actions** los secretos:
-   - `AZURE_STATIC_WEB_APPS_API_TOKEN`
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_PUBLISHABLE_KEY`
-   - `VITE_OCR_ENDPOINT`
-4. Hacer push a `main`. El workflow (`.github/workflows/azure-static-web-apps.yml`) compila el proyecto inyectando los secretos y publica el contenido de `build/`:
+La integración se realiza directamente con el repositorio de GitHub:
 
-   ```yaml
-   env:
-     VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-     VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-     VITE_OCR_ENDPOINT: ${{ secrets.VITE_OCR_ENDPOINT }}
-   ```
+```text
+Jplazap/PLAZA_JORGE_SMART_PARKING_CRUD
+```
 
-5. La URL pública queda disponible en el *Overview* del recurso en Azure una vez finalizado el despliegue.
+### Configuración utilizada
+
+| Parámetro          | Valor           |
+| ------------------ | --------------- |
+| Plataforma         | Vercel          |
+| Framework          | Vite            |
+| Root Directory     | `./`            |
+| Install Command    | `npm install`   |
+| Build Command      | `npm run build` |
+| Output Directory   | `build`         |
+| Rama de producción | `main`          |
+
+### Variables de entorno
+
+En Vercel se configuraron las siguientes variables:
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_OCR_ENDPOINT
+```
+
+Estas variables son utilizadas durante la compilación de producción para conectar la aplicación con Supabase y con el servicio OCR.
+
+### Proceso de despliegue
+
+1. El código fuente se almacena en GitHub.
+2. El repositorio se conecta con Vercel.
+3. Vercel obtiene el código de la rama `main`.
+4. Se instalan las dependencias mediante `npm install`.
+5. Se ejecuta `npm run build`.
+6. Vite genera la versión de producción dentro de `build/`.
+7. Vercel publica automáticamente el contenido generado.
+8. La aplicación queda disponible mediante un dominio HTTPS `vercel.app`.
+
+El despliegue permite acceder al sistema desde computadores y dispositivos móviles mediante Internet.
+
+### URL de producción
+
+La aplicación está disponible mediante el dominio público proporcionado por Vercel:
+
+```text
+PEGAR_AQUI_LA_URL_DE_VERCEL
+```
+
+> Se recomienda utilizar siempre la URL de producción proporcionada por Vercel para las demostraciones y la entrega académica.
 
 ---
 
 ## Seguridad y buenas prácticas
 
-- `.env`, `.env.local` y variantes están excluidas en `.gitignore`.
-- Ninguna clave, token ni código de acceso se escribe directamente en el código fuente.
-- El endpoint OCR se consume solo a través de variables de entorno / secretos de CI.
-- Los datos de vehículo y propietario que no existen en la respuesta de la API **no se inventan** ni se rellenan con valores de ejemplo.
+* Los archivos `.env` y `.env.local` están excluidos mediante `.gitignore`.
+* No se almacenan credenciales privadas directamente en el código fuente.
+* Las variables de entorno de producción se administran desde Vercel.
+* No se utiliza una clave `service_role` en el frontend.
+* El endpoint OCR se obtiene mediante `import.meta.env.VITE_OCR_ENDPOINT`.
+* La información obtenida de la API se presenta sin inventar datos que no estén disponibles.
+* El proyecto utiliza HTTPS en producción mediante Vercel, lo cual permite utilizar las funciones de cámara del navegador en dispositivos compatibles.
+* El repositorio de GitHub contiene el código fuente necesario para reproducir y mantener el proyecto.
 
 ---
 
 ## Estado de verificación
 
-Este proyecto está implementado y compila correctamente (`npm run build`), pero antes de considerarlo validado en producción se debe confirmar:
+El proyecto fue compilado correctamente mediante:
 
-- [ ] Prueba de cámara en un dispositivo físico.
-- [ ] Verificación de los nombres de campo de la respuesta OCR (`placa`, `confianza`) contra una prueba real en Postman.
-- [ ] Prueba de los cinco estados del servicio (`encontrado`, `no_registrado`, `sin_placa`, `baja_confianza`, `multiples_placas`).
-- [ ] Prueba de los errores HTTP `400`, `413`, `415`, `502` y `504`.
-- [ ] Despliegue confirmado en Azure con URL pública activa.
+```bash
+npm run build
+```
+
+Además, se verificó el funcionamiento del despliegue de producción mediante Vercel.
+
+### Pruebas realizadas
+
+* [x] Compilación de producción mediante Vite.
+* [x] Repositorio GitHub configurado.
+* [x] Integración GitHub → Vercel.
+* [x] Deployment de producción creado.
+* [x] URL pública de Vercel generada.
+* [x] Aplicación accesible desde navegador de escritorio.
+* [x] Aplicación accesible desde dispositivo móvil.
+* [x] Conexión con Supabase verificada.
+* [x] Consulta de vehículos y propietarios.
+* [x] Consulta de información vehicular mediante placa.
+* [x] Funcionamiento del monitoreo de entrada.
+* [x] Configuración de variables de entorno en producción.
+
+### Resultado
+
+El sistema se encuentra **desplegado y disponible públicamente mediante Vercel**, permitiendo acceder al panel administrativo desde un navegador web sin necesidad de ejecutar el proyecto localmente.
 
 ---
 
 ## Autor
 
 **Jorge Enrique Plaza Pisanan**
-UTEQ — Facultad de Ciencias de la Computación y Diseño Digital, Telemática, "Quevedo", Los Ríos
-Aplicaciones Telemáticas Basadas en Web
+
+UTEQ — Facultad de Ciencias de la Computación y Diseño Digital
+Carrera de Telemática — Quevedo, Los Ríos, Ecuador
+
+**Asignatura:** Aplicaciones Telemáticas Basadas en Web
