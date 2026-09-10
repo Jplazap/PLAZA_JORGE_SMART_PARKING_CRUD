@@ -5,6 +5,8 @@ Panel administrativo desarrollado con **React + Vite + CoreUI** para el sistema 
 El proyecto se encuentra desplegado en producción mediante **Vercel**, con acceso público mediante un dominio `vercel.app`.
 
 <img width="813" height="417" alt="image" src="https://github.com/user-attachments/assets/488e6f1fa-0ac9-4e33-9332-af37058d09df" />
+<img width="372" height="509" alt="image" src="https://github.com/user-attachments/assets/dc3334bb-2aeb-4547-a11f-a025cb0035e7" />
+<img width="542" height="643" alt="image" src="https://github.com/user-attachments/assets/cf5420a6-94c7-4cd0-82a5-9699db894ac4" />
 
 ---
 
@@ -43,7 +45,8 @@ Vista administrativa accesible en `/parqueadero/vehiculos` que consulta directam
 * Mensajes de error.
 * Botón **Actualizar** para recargar la información.
 
-<img width="813" height="417" alt="image" src="https://github.com/user-attachments/assets/96e92d35-798f-49c4-a34f-52bf26228a4b" />
+<img width="813" height="417" alt="image" src="https://github.com/user-attachments/assets/17d592f9-41d8-466c-8f1e-04a0b50b224c" />
+
 
 La vista está orientada a la consulta y administración de la información de vehículos y propietarios disponible en Supabase.
 
@@ -64,7 +67,8 @@ Vista accesible en `/parqueadero/monitoreo-entrada` que permite capturar la imag
 * Validación del formato y tamaño de la imagen.
 * Tamaño máximo permitido de 4 MiB.
 
-<img width="724" height="350" alt="image" src="https://github.com/user-attachments/assets/4fe517e3-d0e7-4993-8e17-adac82f4750d" />
+<img width="767" height="366" alt="image" src="https://github.com/user-attachments/assets/64d2b6e5-3dfa-41a6-8b45-acfc97aee68d" />
+
 
 #### Resultado del reconocimiento
 
@@ -82,7 +86,12 @@ Vista accesible en `/parqueadero/monitoreo-entrada` que permite capturar la imag
 * Manejo de errores HTTP `400`, `413`, `415`, `502` y `504`.
 * Opción para reintentar el procesamiento o seleccionar una nueva imagen.
 
-<img width="813" height="458" alt="image" src="https://github.com/user-attachments/assets/d08b18ab-d24c-4023-9e08-2b513f833b79" />
+<img width="724" height="350" alt="image" src="https://github.com/user-attachments/assets/5141c0d5-adf1-447e-9e02-1d9557ff420c" />
+<img width="798" height="387" alt="image" src="https://github.com/user-attachments/assets/6f70dea7-11bb-4d26-b229-c42146ba5568" />
+<img width="791" height="353" alt="image" src="https://github.com/user-attachments/assets/90a69e36-2b34-4b3e-83d7-7c549d11ce76" />
+<img width="940" height="454" alt="image" src="https://github.com/user-attachments/assets/80f4ddd4-9121-459a-bdbe-62f1e8d120d2" />
+<img width="940" height="450" alt="image" src="https://github.com/user-attachments/assets/24d3e167-64ea-4d91-8b48-fcdbe5b5845f" />
+
 
 > La identificación de la placa y la consulta de los datos asociados se realizan mediante el servicio OCR proporcionado para el proyecto. El frontend consume la respuesta del servicio y presenta la información obtenida.
 
