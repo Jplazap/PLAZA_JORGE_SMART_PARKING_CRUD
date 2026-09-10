@@ -1,213 +1,171 @@
-# Smart Parking UTEQ
+UTEQ Smart Parking — Panel de Administración
 
-Sistema web para la gestión de vehículos y propietarios del proyecto **Smart Parking UTEQ**. La aplicación fue desarrollada con **React**, **CoreUI** y **Supabase**, y permite consultar, registrar, editar y eliminar vehículos mediante una interfaz administrativa.
+Panel administrativo desarrollado con React + Vite + CoreUI para el sistema de parqueadero inteligente de la UTEQ. Consulta y visualiza los vehículos autorizados almacenados en Supabase, y permite monitorear el ingreso vehicular en tiempo real mediante reconocimiento automático de placas (OCR).
 
-## Tecnologías utilizadas
+<img src="public/captura.png" alt="Vista de Vehículos y propietarios">
+Contenido
+Funcionalidades
+1. Vehículos y propietarios
+2. Monitoreo de entrada
+Tecnologías utilizadas
+Configuración
+Instalación y ejecución
+Estructura del proyecto
+Rutas de la aplicación
+Despliegue (Azure Static Web Apps)
+Seguridad y buenas prácticas
+Estado de verificación
+Autor
+Funcionalidades
+1. Vehículos y propietarios
 
-- React
-- CoreUI React Admin Template
-- Supabase
-- PostgreSQL
-- JavaScript
-- Vite
-- Git y GitHub
+Vista administrativa accesible en /parqueadero/vehiculos que consulta directamente la tabla vehiculos de Supabase.
 
-## Estructura y configuración del proyecto
+Fotografía del vehículo con enlace a la fuente original.
+Fotografía circular del propietario.
+Matrícula, marca, modelo, año y color.
+Nombre del propietario, cédula enmascarada y correo institucional.
+Estado de autorización del vehículo.
+Búsqueda por placa, marca, modelo, color, propietario o correo.
+Paginación de 10 registros por página.
+Indicador de carga, mensaje de error y botón Actualizar.
 
-### Proyecto abierto en Visual Studio Code
+Es una vista de solo consulta: no incluye formularios CRUD, registro de entradas/salidas ni autenticación propia.
 
-La aplicación se trabaja desde Visual Studio Code, manteniendo los componentes, vistas, rutas y archivos de conexión organizados dentro del proyecto.
+2. Monitoreo de entrada
 
-![Proyecto Smart Parking UTEQ en Visual Studio Code](docs/images/10-proyecto-vscode.png)
+Vista accesible en /parqueadero/monitoreo-entrada que permite capturar la imagen de un vehículo y reconocer su placa automáticamente mediante un servicio REST de OCR, verificando si está autorizado a ingresar.
 
-### Estructura principal
+Captura (columna izquierda)
 
-Los archivos incorporados para la funcionalidad de vehículos y propietarios se organizan principalmente de la siguiente manera:
+Vista previa de cámara en tiempo real (navigator.mediaDevices.getUserMedia), con preferencia por la cámara posterior en dispositivos móviles (facingMode: environment).
+Activar / detener cámara, con liberación automática de los tracks al salir de la vista.
+Captura de fotografía mediante <canvas> → Blob JPEG.
+Selección alternativa de una imagen JPG o PNG desde el dispositivo.
+Validación de formato y tamaño (máximo 4 MiB) antes de enviar.
 
-```text
-SmartParkingUTEQ/
-├── .env.local
-├── package.json
-├── package-lock.json
-└── src/
-    ├── hooks/
-    │   └── useVehiculos.js
-    ├── lib/
-    │   └── supabase.js
-    ├── views/
-    │   └── parqueadero/
-    │       └── ListaVehiculos.jsx
-    ├── _nav.jsx
-    └── routes.js
-```
+Resultado (columna derecha)
 
-![Estructura principal del proyecto](docs/images/11-estructura-proyecto.png)
+Envío de la imagen por POST (cuerpo binario, no JSON/Base64) al endpoint OCR.
+Estado del reconocimiento, placa detectada y nivel de confianza del OCR.
+Imagen devuelta por la API con la placa marcada (rectángulo verde), reconstruida desde Base64.
+Si el vehículo está registrado: marca, modelo, año, color, tipo, fotografías, nombre del propietario, cédula enmascarada y autorización.
+Si no está registrado: alerta VEHÍCULO NO REGISTRADO, sin datos inventados.
+Manejo de los estados sin_placa, baja_confianza y multiples_placas, y de los errores HTTP 400, 413, 415, 502 y 504, con opción de reintentar o procesar otra imagen.
 
-## Interfaz principal
+La verificación del registro del vehículo (consulta a Supabase) la realiza el servicio OCR externo; el frontend no consulta Supabase directamente para esta funcionalidad — consume el resultado ya resuelto por la API.
 
-La vista **Vehículos y propietarios** presenta los registros almacenados en la base de datos. Desde esta pantalla se puede buscar información, consultar los datos de cada vehículo y propietario, actualizar la lista y acceder a las operaciones de registro, edición y eliminación.
+Tecnologías utilizadas
+Tecnología	Uso en el proyecto
+React 19	Interfaz de usuario basada en componentes y hooks
+Vite	Servidor de desarrollo y compilación; inyecta variables VITE_*
+CoreUI React	Sistema de componentes del panel administrativo
+Supabase JS Client	Consulta de la tabla vehiculos (vista de Vehículos y propietarios)
+API REST OCR	Servicio externo (Azure Functions) para reconocimiento de placas y verificación de registro
+getUserMedia + Canvas	Acceso a la cámara y captura de fotogramas
+Sass	Estilos del template
+GitHub Actions	Build y despliegue automatizado
+Azure Static Web Apps	Hospedaje con HTTPS habilitado
+Configuración
 
-![Página principal de vehículos y propietarios](docs/images/01-pagina-principal.png)
+Crea un archivo .env (o .env.local) en la raíz del proyecto — nunca se sube al repositorio — con:
 
-## Registro de un nuevo vehículo
+dotenv
+VITE_SUPABASE_URL=https://SU_PROYECTO.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_SU_CLAVE
+VITE_OCR_ENDPOINT=https://SU_ENDPOINT_OCR_PROPORCIONADO_POR_EL_DOCENTE
 
-El botón **Agregar** abre un formulario para ingresar la información correspondiente al vehículo y a su propietario. Se solicitan datos como placa, marca, modelo, año, color, tipo, fotografías, nombre del propietario, cédula, correo institucional y estado de autorización.
+Reglas importantes:
 
-![Formulario para agregar un registro](docs/images/05-agregar-registro.png)
+No se deben publicar .env, .env.local ni ninguna clave service_role.
+VITE_OCR_ENDPOINT (URL con el código de acceso del docente) no se escribe en ningún componente; se lee exclusivamente vía import.meta.env.VITE_OCR_ENDPOINT.
+En producción, las tres variables se configuran como secretos de GitHub Actions e inyectan durante el paso de build del workflow (ver Despliegue).
 
-## Funcionalidades CRUD
+Puedes usar .env.example como plantilla de referencia (sin valores reales).
 
-El módulo implementa las operaciones fundamentales para la administración de los registros:
-
-- **Crear:** permite registrar un nuevo vehículo y su propietario.
-- **Leer:** consulta y presenta los vehículos almacenados en Supabase.
-- **Actualizar:** permite modificar la información de un registro existente.
-- **Eliminar:** permite borrar un registro mediante una confirmación previa.
-
-### Edición de registros
-
-La opción de edición carga la información existente dentro del formulario para realizar los cambios necesarios. Por seguridad, la cédula se presenta enmascarada en la vista y puede conservarse sin necesidad de volver a ingresarla durante una edición.
-
-![Edición de vehículo y propietario](docs/images/02-editar-registro.png)
-
-### Registro creado
-
-Después de registrar correctamente un vehículo, la información se actualiza y el nuevo elemento aparece dentro de la tabla de vehículos y propietarios.
-
-![Nuevo registro mostrado en la tabla](docs/images/03-registro-creado.png)
-
-### Eliminación de registros
-
-Antes de eliminar un vehículo, el sistema muestra una ventana de confirmación con información básica del registro. De esta forma se reduce el riesgo de eliminar información accidentalmente.
-
-![Confirmación de eliminación](docs/images/04-eliminar-registro.png)
-
-## Gestión de puestos
-
-El módulo **Puestos** permite visualizar y administrar los espacios del parqueadero en tiempo real, así como consultar el historial de uso de cada puesto.
-
-### Estado actual
-
-Muestra el total de puestos disponibles, cuántos están libres y ocupados, junto con el detalle del vehículo y propietario asignado a cada puesto ocupado. Los datos se actualizan automáticamente conforme rota el uso de los vehículos.
-
-![Estado actual de los puestos](docs/images/12-gestion-puestos-estado-actual.png)
-
-### Historial
-
-Permite seleccionar un puesto específico y consultar el historial de vehículos que lo han utilizado, incluyendo hora de entrada, hora de salida y tiempo total estacionado.
-
-![Historial de un puesto](docs/images/13-gestion-puestos-historial.png)
-
-### Administrar puestos
-
-Desde esta sección se listan todos los puestos con su código, columna, número, sensor asociado y estado actual, permitiendo agregar, editar o eliminar puestos.
-
-![Administración de puestos](docs/images/14-gestion-puestos-administrar.png)
-
-## Base de datos con Supabase
-
-Supabase se utiliza como servicio de base de datos para el proyecto. La aplicación React establece la conexión mediante `@supabase/supabase-js` y utiliza variables de entorno para mantener la configuración separada del código fuente.
-
-![Proyecto Smart Parking UTEQ en Supabase](docs/images/06-proyecto-supabase.png)
-
-La base de datos contiene las tablas principales `puestos`, `registros_estacionamiento` y `vehiculos`.
-
-### Tabla `puestos`
-
-Esta tabla almacena la información de los espacios disponibles en el parqueadero, incluyendo su código, columna, número e identificador relacionado con el sensor.
-
-![Tabla puestos en Supabase](docs/images/07-tabla-puestos.png)
-
-### Tabla `registros_estacionamiento`
-
-Contiene los registros relacionados con la utilización de los puestos de estacionamiento y establece relaciones con vehículos y puestos.
-
-![Tabla registros de estacionamiento](docs/images/08-tabla-registros-estacionamiento.png)
-
-### Tabla `vehiculos`
-
-Almacena la información utilizada por el módulo de vehículos y propietarios, como placa, marca, modelo, año y los demás datos necesarios para la administración de cada registro.
-
-![Tabla vehículos en Supabase](docs/images/09-tabla-vehiculos.png)
-
-## Instalación
-
-Clona el repositorio:
-
-```bash
-git clone https://github.com/jrodriguezs7-art/SmartParkingUTEQ.git
-```
-
-Ingresa al proyecto:
-
-```bash
-cd SmartParkingUTEQ
-```
-
-Instala las dependencias:
-
-```bash
+Instalación y ejecución
+bash
 npm install
-```
-
-Instala el cliente de Supabase si todavía no está incluido:
-
-```bash
-npm install --save-exact @supabase/supabase-js
-```
-
-## Configuración de Supabase
-
-Crea un archivo `.env.local` en la raíz del proyecto:
-
-```env
-VITE_SUPABASE_URL=TU_URL_DE_SUPABASE
-VITE_SUPABASE_PUBLISHABLE_KEY=TU_CLAVE_PUBLICA_DE_SUPABASE
-```
-
-> [!IMPORTANT]
-> No publiques claves secretas ni una `service_role` en el repositorio. El archivo `.env.local` debe permanecer excluido mediante `.gitignore`.
-
-La conexión se realiza desde `src/lib/supabase.js` utilizando las variables de entorno.
-
-## Ejecución
-
-Para iniciar el proyecto en modo de desarrollo:
-
-```bash
 npm start
-```
 
-Una vez iniciado, abre en el navegador la dirección indicada por Vite, normalmente:
+Abrir en el navegador:
 
-```text
-http://localhost:5173
-```
+text
+http://localhost:3000/#/parqueadero/vehiculos
+http://localhost:3000/#/parqueadero/monitoreo-entrada
 
-## Características principales
+El proyecto usa HashRouter, por eso las rutas incluyen #. El puerto 3000 es el origen autorizado por el docente para consumir el endpoint OCR durante las pruebas.
 
-- Consulta de vehículos y propietarios.
-- Registro de nuevos vehículos.
-- Edición de registros existentes.
-- Eliminación con ventana de confirmación.
-- Búsqueda por vehículo o propietario.
-- Paginación de resultados.
-- Visualización del estado de autorización.
-- Cédula enmascarada en la tabla.
-- Integración de React con Supabase.
-- Interfaz administrativa basada en CoreUI.
-- Diseño adaptable a diferentes tamaños de pantalla.
+Para generar la compilación de producción:
 
-## Consideraciones de seguridad
+bash
+npm run build
 
-La aplicación utiliza una clave pública de Supabase desde el frontend. Los permisos efectivos sobre los datos deben controlarse mediante los privilegios de PostgreSQL y las políticas de **Row Level Security (RLS)** configuradas en Supabase.
+Para revisar el estilo de código:
 
-Para un entorno de producción se recomienda implementar autenticación y limitar las operaciones de inserción, actualización y eliminación únicamente a usuarios autorizados.
+bash
+npm run lint
+Estructura del proyecto
+text
+src/
+├── _nav.jsx                                   # Menú lateral (Vehículos, Monitoreo de entrada)
+├── routes.js                                  # Registro de rutas con carga diferida (lazy)
+├── App.jsx                                     # HashRouter y layout raíz
+├── hooks/
+│   ├── useVehiculos.js                        # Consulta y recarga de Supabase
+│   └── useCamara.js                            # Acceso, captura y liberación de la cámara
+├── lib/
+│   ├── supabase.js                             # Cliente de Supabase
+│   └── ocrService.js                           # Validación y consumo del endpoint OCR
+└── views/
+    └── parqueadero/
+        ├── ListaVehiculos.jsx                  # Tabla, búsqueda y paginación
+        └── monitoreo-entrada/
+            ├── MonitoreoEntrada.jsx            # Vista principal (captura, 2 columnas)
+            └── PanelResultado.jsx              # Presentación del resultado por estado
 
-## Resultado
+.github/
+└── workflows/
+    └── azure-static-web-apps.yml               # Build + despliegue a Azure Static Web Apps
 
-El proyecto proporciona una interfaz funcional para administrar los vehículos y propietarios de **Smart Parking UTEQ**. La integración entre React, CoreUI y Supabase permite mantener separadas la interfaz de usuario, la lógica de consulta y la persistencia de los datos, facilitando futuras ampliaciones del sistema.
+Documentación adicional: ARCHITECTURE.md y DEVELOPMENT.md.
 
-## Autor
+Rutas de la aplicación
+Ruta	Vista	Descripción
+/parqueadero/vehiculos	Vehículos y propietarios	Listado, búsqueda y paginación desde Supabase
+/parqueadero/monitoreo-entrada	Monitoreo de entrada	Captura, reconocimiento de placa y verificación de ingreso
+Despliegue (Azure Static Web Apps)
 
-Proyecto académico **Smart Parking UTEQ**.
+El proyecto se despliega como sitio estático en Azure Static Web Apps, con HTTPS habilitado (requisito indispensable para el uso de la cámara del navegador).
+
+Crear el recurso Static Web App en Azure (plan gratuito), eligiendo Other como origen de despliegue.
+Copiar el deployment token del recurso y guardarlo como secreto AZURE_STATIC_WEB_APPS_API_TOKEN en GitHub.
+Configurar en Settings → Secrets and variables → Actions los secretos:
+AZURE_STATIC_WEB_APPS_API_TOKEN
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_OCR_ENDPOINT
+Hacer push a main. El workflow (.github/workflows/azure-static-web-apps.yml) compila el proyecto inyectando los secretos y publica el contenido de build/:
+yaml
+   env:
+     VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+     VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+     VITE_OCR_ENDPOINT: ${{ secrets.VITE_OCR_ENDPOINT }}
+La URL pública queda disponible en el Overview del recurso en Azure una vez finalizado el despliegue.
+Seguridad y buenas prácticas
+.env, .env.local y variantes están excluidas en .gitignore.
+Ninguna clave, token ni código de acceso se escribe directamente en el código fuente.
+El endpoint OCR se consume solo a través de variables de entorno / secretos de CI.
+Los datos de vehículo y propietario que no existen en la respuesta de la API no se inventan ni se rellenan con valores de ejemplo.
+Estado de verificación
+
+Este proyecto está implementado y compila correctamente (npm run build), pero antes de considerarlo validado en producción se debe confirmar:
+
+ Prueba de cámara en un dispositivo físico.
+ Verificación de los nombres de campo de la respuesta OCR (placa, confianza) contra una prueba real en Postman.
+ Prueba de los cinco estados del servicio (encontrado, no_registrado, sin_placa, baja_confianza, multiples_placas).
+ Prueba de los errores HTTP 400, 413, 415, 502 y 504.
+ Despliegue confirmado en Azure con URL pública activa.
+Autor
+
+Jorge Enrique Plaza Pisanan UTEQ — Facultad de Ciencias de la Computación y Diseño Digital, Telemática, "Quevedo", Los Ríos Aplicaciones Telemáticas Basadas en Web
