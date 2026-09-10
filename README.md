@@ -4,7 +4,8 @@ Panel administrativo desarrollado con **React + Vite + CoreUI** para el sistema 
 
 El proyecto se encuentra desplegado en producción mediante **Vercel**, con acceso público mediante un dominio `vercel.app`.
 
-<img width="813" height="417" alt="image" src="https://github.com/user-attachments/assets/488e6f1fa-0ac9-4e33-9332-af37058d09df" />
+<img width="813" height="417" alt="image" src="https://github.com/user-attachments/assets/d8c596de-3530-4486-bbb1-0225e951728f" />
+
 <img width="372" height="509" alt="image" src="https://github.com/user-attachments/assets/dc3334bb-2aeb-4547-a11f-a025cb0035e7" />
 <img width="542" height="643" alt="image" src="https://github.com/user-attachments/assets/cf5420a6-94c7-4cd0-82a5-9699db894ac4" />
 
